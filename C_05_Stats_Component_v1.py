@@ -38,31 +38,35 @@ class Play:
     """
 
     def __init__(self, how_many):
+        self.rounds_played = IntVar()
         self.rounds_won = IntVar()
 
         # Lists for stats component
 
         # Highest Score Test Data
-        self.all_scores_list = [10, 20, 20, 26, 19]
-        self.all_high_score_list = [10, 20, 20, 16, 19]
-        self.rounds_won.set(5)
+        # self.rounds_played.set(5)
+        # self.rounds_won.set(5)
+        # self.win_streak = [5]
+        # self.lose_streak = [0]
 
         # Lowest Score Test Data
-        # self.all_scores_list = [0, 0, 0, 0, 0]
-        # self.all_high_score_list = [10, 20, 20, 16, 19]
+        # self.rounds_played.set(5)
         # self.rounds_won.set(0)
+        # self.win_streak = [0]
+        # self.lose_streak = [5]
 
         # Random Score Test Data
-        # self.all_scores_list = [0, 15, 16, 0, 16]
-        # self.all_high_score_list = [20, 19, 18, 20, 20]
-        # self.rounds_won.set(3)
+        self.rounds_played.set(5)
+        self.rounds_won.set(3)
+        self.win_streak = [2, 1]
+        self.lose_streak = [1, 1]
 
         self.play_box = Toplevel()
 
         self.game_frame = Frame(self.play_box)
         self.game_frame.grid(padx=10, pady=10)
 
-        self.heading_label = Label(self.game_frame, text="Colour Quest",
+        self.heading_label = Label(self.game_frame, text="God Quiz",
                                    font=("Arial", "16", "bold"), padx=5,
                                    pady=5)
         self.heading_label.grid(row=0)
@@ -80,7 +84,8 @@ class Play:
         # IMPORTANT: retrieve number of rounds
         # won as a number (rather than the 'self' container)
         rounds_won = self.rounds_won.get()
-        stats_bundle = [rounds_won, self.all_scores_list, self.all_high_score_list]
+        rounds_played = self.rounds_played.get()
+        stats_bundle = [rounds_won, rounds_played, self.win_streak, self.lose_streak]
 
         Stats(self, stats_bundle)
 
@@ -94,11 +99,13 @@ class Stats:
 
         # Extract info from master list
         rounds_won = all_stats_info[0]
-        user_scores = all_stats_info[1]
-        high_scores = all_stats_info[2]
+        rounds_played = all_stats_info[1]
+        win_streaks = all_stats_info[2]
+        lose_streaks = all_stats_info[3]
 
-        # sort user scores to find high score
-        user_scores.sort()
+        # sort streaks to find the highest streak
+        win_streaks.sort()
+        lose_streaks.sort()
 
         # setup dialogue box
         self.stats_box = Toplevel()
@@ -114,38 +121,31 @@ class Stats:
         self.stats_frame.grid()
 
         # math to populate stats dialogue
-        rounds_played = len(user_scores)
-
         success_rate = rounds_won / rounds_played * 100
-        total_score = sum(user_scores)
-        max_possible = sum(high_scores)
-
-        best_score = user_scores[-1]
-        average_score = total_score / rounds_played
 
         # strings for Stats labels...
-
+        rounds_string = f"Rounds Played: {rounds_played}"
         success_string = (f"Success rate: {rounds_won} / {rounds_played} "
                           f"({success_rate:.0f})%")
-        total_score_string = f"Total Score: {total_score}"
-        max_possible_string = f"Maximum Possible Score: {max_possible}"
-        best_score_string = f"Best Score: {best_score}"
+        longest_win_string = f"Longest Win Streak: {max(win_streaks)}"
+        longest_lose_string = f"Longest Lose Streak: {max(lose_streaks)}"
 
         # custom comment text and formatting
-        if total_score == max_possible:
-            comment_string = ("Amazing! You got the highest possible score!")
+        if max(win_streaks) == rounds_played:
+            comment_string = ("Amazing! You got every question correct!")
             comment_colour = "#D5E8D4"
+            border_colour = "#82B366"
 
-        elif total_score == 0:
-            comment_string = ("Oops - You've lost every round! You might want "
-                              "yo look at the hints!")
+        elif max(lose_streaks) == rounds_played:
+            comment_string = ("Oops - You've lost every round! \nYou might want "
+                              "to look at the hints!")
             comment_colour = "#F8CECC"
-            best_score_string = f"Best Score: n/a"
+            border_colour = "#B85450"
+
         else:
             comment_string = ""
             comment_colour = "#FFF2CC"
-
-        average_score_string = f"Average Score: {average_score:.0f}\n"
+            border_colour = "#FFF2CC"
 
         heading_font = ("Arial", "16", "bold")
         normal_font = ("Arial", "14")
@@ -154,19 +154,17 @@ class Stats:
         # Label List (text | font | bg | 'Sticky')
         all_stats_strings = [
             ["Statistics", heading_font, ""],
+            [rounds_string, normal_font, "W"],
             [success_string, normal_font, "W"],
-            [total_score_string, normal_font, "W"],
-            [max_possible_string, normal_font, "W"],
-            [comment_string, comment_font, "W"],
-            ["\nRound Stats", heading_font, ""],
-            [best_score_string, normal_font, "W"],
-            [average_score_string, normal_font, "W"]
+            [longest_win_string, normal_font, "W"],
+            [longest_lose_string, normal_font, "W"],
+            [comment_string, comment_font, "W"]
         ]
 
         stats_label_ref_list = []
         for count, item in enumerate(all_stats_strings):
             self.stats_label = Label(self.stats_frame, text=item[0], font=item[1],
-                                     anchor="w", justify="left", padx=30, pady=5, bg="#FFF2CC")
+                                     anchor="w", justify="left", padx=30, pady=10, bg="#FFF2CC")
             self.stats_label.grid(row=count, sticky=item[2], padx=10)
             stats_label_ref_list.append(self.stats_label)
 
@@ -176,8 +174,10 @@ class Stats:
         heading_label.grid(pady=10)
 
         # Configure comment label background (for all won / all lost)
-        stats_comment_label = stats_label_ref_list[4]
-        stats_comment_label.config(bg=comment_colour)
+        stats_comment_label = stats_label_ref_list[5]
+        stats_comment_label.config(bg=comment_colour, highlightbackground=border_colour, highlightthickness=2)
+        if comment_string == "":
+            stats_comment_label.destroy()
 
         self.dismiss_button = Button(self.stats_frame,
                                      font=("Arial", "16", "bold"), text="Dismiss",
