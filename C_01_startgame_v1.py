@@ -49,7 +49,6 @@ class StartGame:
         self.entry_area_frame = Frame(self.start_frame)
         self.entry_area_frame.grid(row=3)
 
-        # create entry box
         self.num_rounds_entry = Entry(self.entry_area_frame, font=("Arial", "18", "bold"), width=10, bg="#DBDBDB",
                                       justify="center")
         self.num_rounds_entry.grid(row=0, column=0, padx=10, pady=10)
