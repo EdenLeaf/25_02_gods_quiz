@@ -12,6 +12,7 @@ def get_gods():
     all_gods = list(csv.reader(file, delimiter=","))
     file.close()
 
+    # create list for god info
     round_gods = []
     god_names = []
 
