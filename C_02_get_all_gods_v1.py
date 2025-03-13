@@ -7,6 +7,7 @@ file = open("00_gods_data.csv", "r")
 all_gods = list(csv.reader(file, delimiter=","))
 file.close()
 
+# create list for god info
 round_gods = []
 god_names = []
 
