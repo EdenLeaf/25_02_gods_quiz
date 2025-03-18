@@ -44,10 +44,10 @@ class Play:
         # Lists for stats component
 
         # Highest Score Test Data
-        # self.rounds_played.set(5)
-        # self.rounds_won.set(5)
-        # self.win_streak = [5]
-        # self.lose_streak = [0]
+        self.rounds_played.set(5)
+        self.rounds_won.set(5)
+        self.win_streak = [5]
+        self.lose_streak = [0]
 
         # Lowest Score Test Data
         # self.rounds_played.set(5)
@@ -56,10 +56,10 @@ class Play:
         # self.lose_streak = [5]
 
         # Random Score Test Data
-        self.rounds_played.set(5)
-        self.rounds_won.set(3)
-        self.win_streak = [2, 1]
-        self.lose_streak = [1, 1]
+        # self.rounds_played.set(5)
+        # self.rounds_won.set(3)
+        # self.win_streak = [2, 1]
+        # self.lose_streak = [1, 1]
 
         self.play_box = Toplevel()
 
@@ -132,12 +132,12 @@ class Stats:
 
         # custom comment text and formatting
         if max(win_streaks) == rounds_played:
-            comment_string = ("Amazing! You got every question correct!")
+            comment_string = ("Well Done! You have won every\nround so far :)")
             comment_colour = "#D5E8D4"
             border_colour = "#82B366"
 
         elif max(lose_streaks) == rounds_played:
-            comment_string = ("Oops - You've lost every round! \nYou might want "
+            comment_string = ("Oops - You've not won any rounds yet :( \nYou might want "
                               "to look at the hints!")
             comment_colour = "#F8CECC"
             border_colour = "#B85450"
