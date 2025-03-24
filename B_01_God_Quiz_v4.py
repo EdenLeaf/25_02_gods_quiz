@@ -93,11 +93,11 @@ class StartGame:
                                   bg="#E1D5E7", text="Play", width=10, command=partial(self.check_rounds, "Normal"))
         self.play_button.grid(row=0, column=1)
 
-        # Create play button...
-        self.play_button = Button(self.endless_frame, font=("Arial", "16", "bold"),
-                                  bg="#FFE6CC", text="Endless Mode", width=21,
+        # Create endless button...
+        self.endless_button = Button(self.endless_frame, font=("Arial", "16", "bold"),
+                                  bg="#76608A", fg="#FFFFFF", text="Endless Mode", width=21,
                                   command=partial(self.check_rounds, "Endless"))
-        self.play_button.grid(row=0, column=0)
+        self.endless_button.grid(row=0, column=0)
 
     def check_rounds(self, round_mode):
         """
@@ -141,6 +141,10 @@ class StartGame:
             rounds_wanted = -1
             # invoke PLay Class (and take across number of rounds)
             Play(rounds_wanted)
+            # Hide root window (ie: hide rounds choice window
+            self.choose_label.config(text="How many rounds do you want to play?")
+            self.num_rounds_entry.delete(0, END)
+            root.withdraw()
 
 
 class Play:
