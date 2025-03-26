@@ -17,8 +17,10 @@ class StartGame:
 
         # strings for labels
         intro_string = ("Each Round you will be given the domain of a god, and 4 gods to choose from. You will then "
-                        "need to choose which of those 4 gods corresponds to that domain. \n\n"
-                        "To begin, please state how many rounds you want to play and then press play.")
+                        "need to choose which of those 4 gods corresponds to that domain.\n\nThere are 2 options for "
+                        "the number of rounds. You can either choose a specific number of rounds to play and then "
+                        "press the play button, or you can play endless mode, where the game will not stop until "
+                        "you end it.")
 
         # choose_string = "Oops - Please choose a whole number more than zero."
         choose_string = "How many rounds do you want to play?"
@@ -35,7 +37,7 @@ class StartGame:
         start_label_ref = []
         for count, item in enumerate(start_labels_list):
             make_label = Label(self.start_frame, text=item[0], font=item[1],
-                               fg=item[2], wraplength=350, justify="left",
+                               fg=item[2], wraplength=375, justify="left",
                                pady=10, padx=10)
             make_label.grid(row=count)
 
@@ -77,7 +79,8 @@ class StartGame:
         rounds_wanted = self.num_rounds_entry.get()
 
         # Reset label and entry box (for when users come back to home screen
-        self.choose_label.config(fg="#009900", font=("Arial", "12", "bold"))
+        self.choose_label.config(fg="#009900", font=("Arial", "12", "bold"),
+                                 text="How many rounds do you want to play?")
         self.num_rounds_entry.config(bg="#FFFFFF")
 
         error = "Oops - Please choose a whole number more than 0."
@@ -91,7 +94,6 @@ class StartGame:
                     # invoke PLay Class (and take across number of rounds)
                     Play(rounds_wanted)
                     # Hide root window (ie: hide rounds choice window
-                    self.choose_label.config(text="How many rounds do you want to play?")
                     self.num_rounds_entry.delete(0, END)
                     root.withdraw()
                 else:
@@ -111,7 +113,6 @@ class StartGame:
             # invoke PLay Class (and take across number of rounds)
             Play(rounds_wanted)
             # Hide root window (ie: hide rounds choice window
-            self.choose_label.config(text="How many rounds do you want to play?")
             self.num_rounds_entry.delete(0, END)
             root.withdraw()
 
