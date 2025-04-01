@@ -30,7 +30,7 @@ def get_gods():
             round_gods.append(potential_god)
             god_names.append(potential_god[2])
 
-    return god_names, correct_god, round_gods
+    return correct_god, round_gods
 
 
 class StartGame:
@@ -90,16 +90,14 @@ class StartGame:
                                       justify="center")
         self.num_rounds_entry.grid(row=0, column=0, padx=5, pady=10)
 
-        # Create play button...
-        self.play_button = Button(self.entry_area_frame, font=("Arial", "16", "bold"),
-                                  bg="#E1D5E7", text="Play", width=10, command=partial(self.check_rounds, "Normal"))
-        self.play_button.grid(row=0, column=1)
-
-        # Create endless button...
-        self.endless_button = Button(self.endless_frame, font=("Arial", "16", "bold"),
-                                  bg="#76608A", fg="#FFFFFF", text="Endless Mode", width=21,
-                                  command=partial(self.check_rounds, "Endless"))
-        self.endless_button.grid(row=0, column=0)
+        # start button info list (frame | bg | fg | text | width | mode)
+        start_button_list = [[self.endless_frame, "#76608A", "#FFFFFF", "Endless Mode", 21, "Endless"],
+                             [self.entry_area_frame, "#E1D5E7", "#000000", "Play", 10, "Normal"]]
+        # Create start buttons
+        for count, item in enumerate(start_button_list):
+            make_start_button = Button(item[0], font=("Arial", "16", "bold"), bg=item[1], fg=item[2], text=item[3],
+                                       width=item[4], command=partial(self.check_rounds, item[5]))
+            make_start_button.grid(row=0, column=count)
 
     def check_rounds(self, round_mode):
         """
@@ -161,14 +159,13 @@ class Play:
         self.rounds_won.set(0)
         self.win_streak = 0
         self.lose_streak = 0
+
         # put 0 in list so that there is at least one item in each list
         self.all_win_streaks = []
         self.all_lose_streaks = []
         self.round_questions = []
 
-        # Integers / string variables
-        self.gods_list = []
-        self.past_correct_gods = []
+        # create list to prevent duplicates
         self.past_asked_gods = []
 
         # rounds_played - start with zero
@@ -252,6 +249,9 @@ class Play:
         self.stats_button = control_ref_list[2]
         self.end_game_button = control_ref_list[3]
 
+        # Disable stats button so that users can't press it without having completed a round.
+        self.stats_button.config(state=DISABLED)
+
         # Once interface has been created, invoke new round function for
         # first round
         self.new_round()
@@ -278,9 +278,9 @@ class Play:
         # if a question about this god has been asked, get a different god.
         while True:
             # get round gods and correct god
-            self.gods_list = get_gods()
-            self.round_gods_list = self.gods_list[2]
-            correct_god = self.gods_list[1]
+            gods_list = get_gods()
+            self.round_gods_list = gods_list[1]
+            correct_god = gods_list[0]
             # If all gods have been asked about, allow duplicates
             if 0 <= len(self.past_asked_gods) < 63:
                 if correct_god[2] in self.past_asked_gods:
@@ -311,8 +311,8 @@ class Play:
         else:
             heading_text = f"Round {rounds_played}"
         self.heading_label.config(text=heading_text, bg="#DEDEDE")
-        if len(self.past_correct_gods) == 64:
-            self.results_label.config(text=f"         ======= Well done! =======\nYou have correctly answered a "
+        if len(self.past_asked_gods) == 64:
+            self.results_label.config(text=f"         ======= Well done! =======\nYou have answered a "
                                            f"question about all the gods in this quiz. "
                                            f"\nYou can keep on playing, but all questions will "
                                            f"be a duplicate from here on out. \nThank you for playing my game!",
@@ -346,6 +346,9 @@ class Play:
          it with median, updates results and adds results to stats list.
          """
 
+        # enable stats button after at least one round has been played
+        self.stats_button.config(state=NORMAL)
+
         # get user answer and god based on button press...
         answer = self.round_gods_list[user_choice][1]
 
@@ -360,8 +363,6 @@ class Play:
         if god_name == correct_god[2]:
             result_text = f"Success! {god_name} is correct!!"
             result_bg = "#82B366"
-            # add correctly answered god to past gods list
-            self.past_correct_gods.append(correct_god[2])
             # add to stats lists
             rounds_won = self.rounds_won.get()
             rounds_won += 1
@@ -437,12 +438,15 @@ class DisplayHints:
     """
 
     def __init__(self, partner):
+
+        # Disable buttons to prevent program crashing
+        partner.hints_button.config(state=DISABLED)
+        partner.end_game_button.config(state=DISABLED)
+        partner.stats_button.config(state=DISABLED)
+
         # setup dialogue box and background colour
         background = "#D5E8D4"
         self.hint_box = Toplevel()
-
-        # disable hint button
-        partner.hints_button.config(state=DISABLED)
 
         # If user press cross at top, closes hint and 'releases' hint button
         self.hint_box.protocol('WM_DELETE_WINDOW', partial(self.close_hint, partner))
@@ -482,8 +486,10 @@ class DisplayHints:
         """
         Closes hint dialogue box (and enables hint button)
         """
-        # put hint button back to normal...
+        # put buttons back to normal
         partner.hints_button.config(state=NORMAL)
+        partner.end_game_button.config(state=NORMAL)
+        partner.stats_button.config(state=NORMAL)
         self.hint_box.destroy()
 
 
@@ -493,6 +499,11 @@ class Stats:
     """
 
     def __init__(self, partner, all_stats_info):
+
+        # Disable buttons to prevent program crashing
+        partner.hints_button.config(state=DISABLED)
+        partner.end_game_button.config(state=DISABLED)
+        partner.stats_button.config(state=DISABLED)
 
         # Extract info from master list
         rounds_won = all_stats_info[0]
@@ -510,9 +521,6 @@ class Stats:
 
         # list for strings to bring to export
         export_strings = []
-
-        # disable stats button
-        partner.stats_button.config(state=DISABLED)
 
         # If user press cross at top, closes stats and 'releases' stats button
         self.stats_box.protocol('WM_DELETE_WINDOW', partial(self.close_stats, partner))
@@ -537,7 +545,7 @@ class Stats:
 
         # custom comment text and formatting
         if max(win_streaks) == rounds_played:
-            comment_string = ("Well Done! You have won every\nround so far :)")
+            comment_string = ("Well Done! You have gotten every\nquestion correct so far :)")
             comment_colour = "#D5E8D4"
             border_colour = "#82B366"
 
@@ -627,7 +635,10 @@ class Stats:
         """
         Closes stats dialogue box (and enables stats button)
         """
-        # put stats button back to normal...
+
+        # put buttons back to normal
+        partner.hints_button.config(state=NORMAL)
+        partner.end_game_button.config(state=NORMAL)
         partner.stats_button.config(state=NORMAL)
         self.stats_box.destroy()
 
