@@ -186,6 +186,9 @@ class Play:
         # body font for most labels...
         body_font = ("Arial", "12")
 
+        # If users press the 'x' on the game window, end the entire game!
+        self.play_box.protocol('WM_DELETE_WINDOW', root.destroy)
+
         # List for label details (text | font | background | row)
         play_labels_list = [
             ["Round # of #", ("Arial", "16", "bold"), None, 0],
@@ -455,29 +458,29 @@ class DisplayHints:
                                 height=200)
         self.hint_frame.grid()
 
-        self.hint_heading_label = Label(self.hint_frame,
-                                        text="Hints",
-                                        font=("Arial", "16", "bold"), bg="#FFFFFF")
-        self.hint_heading_label.grid(row=0)
+        self.hint_heading_label = Label(self.hint_frame, bg="#FFFFFF", text="Hints", font=("Arial", "16", "bold"),
+                                        width=6)
+        self.hint_heading_label.grid(row=0, pady=10)
 
-        hint_text = "\nThe background colour of the question is relates to the " \
+        hint_text = "The background colour of the question is relates to the " \
                     "mythology that the correct god is from:\nRed = Roman\nBlue = Greek\n" \
-                    "This means that if the game asks you who the god of the sea is, you know that the answer would " \
-                    "be Poseidon for a blue background, and Neptune for a red background.\n"
+                    "This means that if the game asks you who the god of wisdom is, you know that the answer would " \
+                    "be Athena for a blue background, and Minerva for a red background.\n\nThe colour of each button "\
+                    "relates to whether the god is a Major(Gold) or Minor(Silver) god, and is NOT a hint."
 
         self.hint_text_label = Label(self.hint_frame,
-                                     text=hint_text, font=("Arial", "12"),wraplength=350,
+                                     text=hint_text, font=("Arial", "12"),wraplength=400,
                                      justify="left")
-        self.hint_text_label.grid(row=1, padx=10)
+        self.hint_text_label.grid(row=1, padx=15)
 
         self.dismiss_button = Button(self.hint_frame,
-                                     font=("Arial", "12", "bold"),
-                                     text="Dismiss", bg="#60A917", fg="#FFFFFF",
+                                     font=("Arial", "16", "bold"),
+                                     text="Dismiss", bg="#60A917", fg="#FFFFFF", width=15,
                                      command=partial(self.close_hint, partner))
-        self.dismiss_button.grid(row=2, pady=10, padx=10)
+        self.dismiss_button.grid(row=2, pady=15, padx=10)
 
         # List and loop to set background colour on everything except the buttons
-        recolour_list = [self.hint_frame, self.hint_heading_label, self.hint_text_label]
+        recolour_list = [self.hint_frame, self.hint_text_label]
 
         for item in recolour_list:
             item.config(bg=background)
@@ -495,7 +498,7 @@ class DisplayHints:
 
 class Stats:
     """
-    Displays stats for God Quiz Game
+    Displays stats for Colour Quest Game
     """
 
     def __init__(self, partner, all_stats_info):
@@ -522,6 +525,9 @@ class Stats:
         # list for strings to bring to export
         export_strings = []
 
+        # disable stats button
+        partner.stats_button.config(state=DISABLED)
+
         # If user press cross at top, closes stats and 'releases' stats button
         self.stats_box.protocol('WM_DELETE_WINDOW', partial(self.close_stats, partner))
 
@@ -545,7 +551,7 @@ class Stats:
 
         # custom comment text and formatting
         if max(win_streaks) == rounds_played:
-            comment_string = ("Well Done! You have gotten every\nquestion correct so far :)")
+            comment_string = ("Well Done! You have won every\nround so far :)")
             comment_colour = "#D5E8D4"
             border_colour = "#82B366"
 
@@ -562,10 +568,13 @@ class Stats:
 
         # create strings for round data
         data_string = ""
+        export_data = ""
         for item in round_data:
-            data_string += f"\n{item[0]} \nYou answered: {item[1]} \nThe correct answer was: {item[2]}\n"
+            if item in round_data[-3:]:
+                data_string += f"\n{item[0]} \nYou answered: {item[1]} \nThe correct answer was: {item[2]}\n"
+            export_data += f"\n{item[0]} \nYou answered: {item[1]} \nThe correct answer was: {item[2]}\n"
         # add string to export list
-        export_strings.append(data_string)
+        export_strings.append(export_data)
 
         heading_font = ("Arial", "16", "bold")
         normal_font = ("Arial", "14")
@@ -601,19 +610,31 @@ class Stats:
             stats_comment_label.destroy()
 
         self.line_label = Label(self.stats_frame, text=f"{'-' * 160}", bg="#FFF2CC", font=("Arial", "5"))
-        self.line_label.grid(row=8, pady=0)
+        self.line_label.grid(row=8)
 
         # move round data label
         round_data_label = stats_label_ref_list[6]
         round_data_label.grid(row=9)
 
+        # overload notice
+        self.overload_label = Label(self.stats_frame,
+                                    text=f"Showing 3 most recent rounds - 3/{rounds_played}\n rounds shown, please "
+                                         "export to file\nto see other rounds", font=("Arial", "14"), justify="left",
+                                    background="#E3E1FF", padx=30, pady=15)
+        self.overload_label.grid(row=10, pady=7)
+
+        background = "#E3E1FF"
+        if len(round_data) <= 3:
+            background = "#FFFFFF"
+            self.overload_label.destroy()
+
         # create a label to hold the past 3 rounds' data
         self.data_label = Label(self.stats_frame, text=data_string, font=("Arial", "14"), justify="left",
-                                padx=30, pady=5, bg="#FFFFFF")
-        self.data_label.grid(row=10, padx=20)
+                                padx=30, pady=5, bg=background, wraplength=310, width=27)
+        self.data_label.grid(row=11, padx=20, pady=8)
 
         self.buttons_frame = Frame(self.stats_frame, bg="#FFF2CC")
-        self.buttons_frame.grid(row=11, pady=15)
+        self.buttons_frame.grid(row=12, pady=5)
 
         # buttons info list (text | bg | width | command)
         buttons_strings = [
@@ -635,8 +656,7 @@ class Stats:
         """
         Closes stats dialogue box (and enables stats button)
         """
-
-        # put buttons back to normal
+        # put disabled buttons back to normal...
         partner.hints_button.config(state=NORMAL)
         partner.end_game_button.config(state=NORMAL)
         partner.stats_button.config(state=NORMAL)
