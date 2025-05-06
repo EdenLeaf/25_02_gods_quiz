@@ -252,8 +252,16 @@ class Play:
         self.stats_button = control_ref_list[2]
         self.end_game_button = control_ref_list[3]
 
+        # images for use on buttons
+        self.hint_image = PhotoImage(file="hint_v2.png")
+
         # Disable stats button so that users can't press it without having completed a round.
         self.stats_button.config(state=DISABLED)
+
+        # Hint Button with chicken
+        self.hints_button.config(text="Hints  ",
+                                 image=self.hint_image,
+                                 compound="right", width=132)
 
         # Once interface has been created, invoke new round function for
         # first round
@@ -338,8 +346,8 @@ class Play:
                 button_colour = "#FFF2CC"
                 text_color = "#59460D"
             item.config(fg=text_color, bg=button_colour,
-                    text=self.round_gods_list[count][2], state=NORMAL, command=partial(self.round_results,
-                                                                                    count, correct_god))
+                        text=self.round_gods_list[count][2], state=NORMAL, command=partial(self.round_results,
+                                                                                           count, correct_god))
 
         self.next_button.config(state=DISABLED)
 
@@ -441,7 +449,6 @@ class DisplayHints:
     """
 
     def __init__(self, partner):
-
         # Disable buttons to prevent program crashing
         partner.hints_button.config(state=DISABLED)
         partner.end_game_button.config(state=DISABLED)
@@ -465,11 +472,11 @@ class DisplayHints:
         hint_text = "The background colour of the question is relates to the " \
                     "mythology that the correct god is from:\nRed = Roman\nBlue = Greek\n" \
                     "This means that if the game asks you who the god of wisdom is, you know that the answer would " \
-                    "be Athena for a blue background, and Minerva for a red background.\n\nThe colour of each button "\
+                    "be Athena for a blue background, and Minerva for a red background.\n\nThe colour of each button " \
                     "relates to whether the god is a Major(Gold) or Minor(Silver) god, and is NOT a hint."
 
         self.hint_text_label = Label(self.hint_frame,
-                                     text=hint_text, font=("Arial", "12"),wraplength=400,
+                                     text=hint_text, font=("Arial", "12"), wraplength=400,
                                      justify="left")
         self.hint_text_label.grid(row=1, padx=15)
 
