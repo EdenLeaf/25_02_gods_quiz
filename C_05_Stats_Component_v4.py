@@ -168,8 +168,8 @@ class Stats:
         export_data = ""
         for item in round_data:
             if item in round_data[-3:]:
-                data_string += f"\n{item[0]} ({item[2]})\nYou answered: {item[1]}\n"
-            export_data += f"\n{item[0]} \nYour answer: {item[1]}\nCorrect answer: {item[2]}\n"
+                data_string += f"\n{item[0]} ({item[1]})\nYou answered: {item[2]}\n"
+            export_data += f"\n{item[0]} \nYour answer: {item[2]}\nCorrect answer: {item[1]}\n"
         # add string to export list
         export_strings.append(export_data)
 
@@ -177,7 +177,7 @@ class Stats:
         normal_font = ("Arial", "14")
         comment_font = ("Arial", "13")
 
-        # Label List (text | font 'Sticky')
+        # Label List (text | font | bg | 'Sticky')
         all_stats_strings = [
             ["Statistics", heading_font, ""],
             [rounds_string, normal_font, "W"],
@@ -192,7 +192,7 @@ class Stats:
         for count, item in enumerate(all_stats_strings):
             self.stats_label = Label(self.stats_frame, text=item[0], font=item[1],
                                      anchor="w", justify="left", padx=30, pady=10, bg="#FFF2CC")
-            self.stats_label.grid(row=count, sticky=item[2], padx=60)
+            self.stats_label.grid(row=count, sticky=item[2], padx=40)
             stats_label_ref_list.append(self.stats_label)
 
         # config heading label
@@ -227,7 +227,7 @@ class Stats:
 
         # create a label to hold the past 3 rounds' data
         self.data_label = Label(self.stats_frame, text=data_string, font=("Arial", "14"), justify="left",
-                                padx=30, pady=5, bg=background)
+                                padx=30, pady=5, bg=background, wraplength=350, width=27)
         self.data_label.grid(row=11, padx=20, pady=8)
 
         self.buttons_frame = Frame(self.stats_frame, bg="#FFF2CC")
@@ -253,7 +253,6 @@ class Stats:
         """
         Closes stats dialogue box (and enables stats button)
         """
-        # put stats button back to normal...
         partner.stats_button.config(state=NORMAL)
         self.stats_box.destroy()
 
