@@ -19,16 +19,16 @@ def get_gods():
     # get the correct god
     correct_god = random.choice(all_gods)
     round_gods.append(correct_god)
-    god_names.append(correct_god[2])
+    god_names.append(str(correct_god[2]).replace(" ", ""))
 
     # loop until we have 3 other gods with different names
     while len(round_gods) < 4:
         potential_god = random.choice(all_gods)
 
         # Get the name and check it's not a duplicate
-        if potential_god[2] not in god_names:
+        if str(potential_god[2]).replace(" ", "") not in god_names:
             round_gods.append(potential_god)
-            god_names.append(potential_god[2])
+            god_names.append(str(potential_god[2]).replace(" ", ""))
 
     return correct_god, round_gods
 
@@ -231,7 +231,7 @@ class Play:
 
         # list for buttons (frame | text | bg | command | width | row | column)
         control_button_list = [
-            [self.game_frame, "Next Round", "#A0522D", self.new_round, 21, 5, None],
+            [self.game_frame, "     Next Round  → →", "#A0522D", self.new_round, 21, 5, None],
             [self.hints_stats_frame, "Hints", "#60A917", self.to_hints, 10, 0, 0],
             [self.hints_stats_frame, "Stats", "#E3C800", self.to_stats, 10, 0, 1],
             [self.game_frame, "End", "#76608A", self.close_play, 21, 7, None]
@@ -254,14 +254,25 @@ class Play:
 
         # images for use on buttons
         self.hint_image = PhotoImage(file="hint_v2.png")
+        self.stats_image = PhotoImage(file="stats.png")
+        self.sad_face = PhotoImage(file="sad_face.png")
+        self.happy_face = PhotoImage(file="happy_face.png")
 
-        # Disable stats button so that users can't press it without having completed a round.
+        # Disable stats button so that users can't press it without having completed a round, & add image
         self.stats_button.config(state=DISABLED)
+        self.stats_button.config(text="Stats  ",
+                                 image=self.stats_image,
+                                 compound="right", width=132)
 
-        # Hint Button with chicken
+        # Hint Button with image
         self.hints_button.config(text="Hints  ",
                                  image=self.hint_image,
                                  compound="right", width=132)
+
+        # End Game Button with sad face
+        self.end_game_button.config(text="End Game  ",
+                                    image=self.sad_face,
+                                    compound="right", width=280)
 
         # Once interface has been created, invoke new round function for
         # first round
@@ -406,7 +417,8 @@ class Play:
 
         if rounds_played == rounds_wanted:
             self.next_button.config(state=DISABLED, text="Game Over")
-            self.end_game_button.config(text="Play Again", bg="#006600")
+            # change 'end game' button to 'play again' button once the game has ended
+            self.end_game_button.config(text="Play Again  ", bg="#006600", image=self.happy_face)
 
         for item in self.god_button_ref:
             item.config(state=DISABLED)
@@ -422,7 +434,8 @@ class Play:
         Displays hints for playing game
         :return:
         """
-        DisplayHints(self)
+        rounds_played = self.rounds_played.get()
+        DisplayHints(self, rounds_played)
 
     def to_stats(self):
         """
@@ -437,7 +450,6 @@ class Play:
         # won as a number (rather than the 'self' container)
         rounds_won = self.rounds_won.get()
         rounds_played = self.rounds_played.get()
-        print(self.round_questions)
         stats_bundle = [rounds_won, rounds_played, self.all_win_streaks, self.all_lose_streaks, self.round_questions]
 
         Stats(self, stats_bundle)
@@ -448,7 +460,9 @@ class DisplayHints:
     Displays hints for God Quiz Game
     """
 
-    def __init__(self, partner):
+    def __init__(self, partner, rounds_played):
+        self.rounds_played = rounds_played
+
         # Disable buttons to prevent program crashing
         partner.hints_button.config(state=DISABLED)
         partner.end_game_button.config(state=DISABLED)
@@ -499,7 +513,9 @@ class DisplayHints:
         # put buttons back to normal
         partner.hints_button.config(state=NORMAL)
         partner.end_game_button.config(state=NORMAL)
-        partner.stats_button.config(state=NORMAL)
+        # only enable stats button if played >= 1 round
+        if self.rounds_played > 1:
+            partner.stats_button.config(state=NORMAL)
         self.hint_box.destroy()
 
 
@@ -509,7 +525,6 @@ class Stats:
     """
 
     def __init__(self, partner, all_stats_info):
-
         # Disable buttons to prevent program crashing
         partner.hints_button.config(state=DISABLED)
         partner.end_game_button.config(state=DISABLED)
@@ -578,8 +593,8 @@ class Stats:
         export_data = ""
         for item in round_data:
             if item in round_data[-3:]:
-                data_string += f"\n{item[0]} \nYou answered: {item[1]} \nThe correct answer was: {item[2]}\n"
-            export_data += f"\n{item[0]} \nYou answered: {item[1]} \nThe correct answer was: {item[2]}\n"
+                data_string += f"\n{item[0]} ({item[2]})\nYou answered: {item[1]}\n"
+            export_data += f"\n{item[0]} \nYour answer: {item[1]}\nCorrect answer: {item[2]}\n"
         # add string to export list
         export_strings.append(export_data)
 
@@ -587,7 +602,7 @@ class Stats:
         normal_font = ("Arial", "14")
         comment_font = ("Arial", "13")
 
-        # Label List (text | font | bg | 'Sticky')
+        # Label List (text | font 'Sticky')
         all_stats_strings = [
             ["Statistics", heading_font, ""],
             [rounds_string, normal_font, "W"],
@@ -602,7 +617,7 @@ class Stats:
         for count, item in enumerate(all_stats_strings):
             self.stats_label = Label(self.stats_frame, text=item[0], font=item[1],
                                      anchor="w", justify="left", padx=30, pady=10, bg="#FFF2CC")
-            self.stats_label.grid(row=count, sticky=item[2], padx=40)
+            self.stats_label.grid(row=count, sticky=item[2], padx=60)
             stats_label_ref_list.append(self.stats_label)
 
         # config heading label
@@ -637,7 +652,7 @@ class Stats:
 
         # create a label to hold the past 3 rounds' data
         self.data_label = Label(self.stats_frame, text=data_string, font=("Arial", "14"), justify="left",
-                                padx=30, pady=5, bg=background, wraplength=310, width=27)
+                                padx=30, pady=5, bg=background)
         self.data_label.grid(row=11, padx=20, pady=8)
 
         self.buttons_frame = Frame(self.stats_frame, bg="#FFF2CC")
@@ -645,7 +660,7 @@ class Stats:
 
         # buttons info list (text | bg | width | command)
         buttons_strings = [
-            ["Export to File", "#F0A30A", 20, partial(self.export_to_file, export_strings)],
+            ["Export to File", "#F0A30A", 15, partial(self.export_to_file, export_strings)],
             ["Dismiss", "#E3C800", 15, partial(self.close_stats, partner)]
         ]
 
@@ -657,13 +672,11 @@ class Stats:
                                        command=item[3])
             self.stats_button.grid(row=count, padx=30, pady=7)
 
-        # closes help dialogue (used by button and x at top of dialogue
-
     def close_stats(self, partner):
         """
         Closes stats dialogue box (and enables stats button)
         """
-        # put disabled buttons back to normal...
+        # put buttons back to normal
         partner.hints_button.config(state=NORMAL)
         partner.end_game_button.config(state=NORMAL)
         partner.stats_button.config(state=NORMAL)
