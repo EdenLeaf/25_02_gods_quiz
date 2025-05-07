@@ -168,8 +168,8 @@ class Stats:
         export_data = ""
         for item in round_data:
             if item in round_data[-3:]:
-                data_string += f"\n{item[0]} \nYou answered: {item[1]} \nThe correct answer was: {item[2]}\n"
-            export_data += f"\n{item[0]} \nYou answered: {item[1]} \nThe correct answer was: {item[2]}\n"
+                data_string += f"\n{item[0]} ({item[2]})\nYou answered: {item[1]}\n"
+            export_data += f"\n{item[0]} \nYour answer: {item[1]}\nCorrect answer: {item[2]}\n"
         # add string to export list
         export_strings.append(export_data)
 
@@ -177,7 +177,7 @@ class Stats:
         normal_font = ("Arial", "14")
         comment_font = ("Arial", "13")
 
-        # Label List (text | font | bg | 'Sticky')
+        # Label List (text | font 'Sticky')
         all_stats_strings = [
             ["Statistics", heading_font, ""],
             [rounds_string, normal_font, "W"],
@@ -192,7 +192,7 @@ class Stats:
         for count, item in enumerate(all_stats_strings):
             self.stats_label = Label(self.stats_frame, text=item[0], font=item[1],
                                      anchor="w", justify="left", padx=30, pady=10, bg="#FFF2CC")
-            self.stats_label.grid(row=count, sticky=item[2], padx=40)
+            self.stats_label.grid(row=count, sticky=item[2], padx=60)
             stats_label_ref_list.append(self.stats_label)
 
         # config heading label
@@ -235,7 +235,7 @@ class Stats:
 
         # buttons info list (text | bg | width | command)
         buttons_strings = [
-            ["Export to File", "#F0A30A", 20, partial(self.export_to_file, export_strings)],
+            ["Export to File", "#F0A30A", 15, partial(self.export_to_file, export_strings)],
             ["Dismiss", "#E3C800", 15, partial(self.close_stats, partner)]
         ]
 
