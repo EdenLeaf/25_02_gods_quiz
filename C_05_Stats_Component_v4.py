@@ -45,13 +45,13 @@ class Play:
         # Lists for stats component
 
         # Highest Score Test Data
-        self.rounds_played.set(3)
-        self.rounds_won.set(3)
-        self.win_streak = [3]
-        self.lose_streak = [0]
-        self.round_data = [["Who is the god of Sleep?", "Hypnos", "Hypnos"],
-                           ["Who is the god of fire?", "Vulcan", "Vulcan"],
-                           ["Who is the queen of the gods?", "Juno", "Juno"]]
+        # self.rounds_played.set(3)
+        # self.rounds_won.set(3)
+        # self.win_streak = [3]
+        # self.lose_streak = [0]
+        # self.round_data = [["Who is the god of Sleep?", "Hypnos", "Hypnos"],
+        #                    ["Who is the god of fire?", "Vulcan", "Vulcan"],
+        #                    ["Who is the queen of the gods?", "Juno", "Juno"]]
 
         # Lowest Score Test Data
         # self.rounds_played.set(3)
@@ -62,12 +62,11 @@ class Play:
         # "Flora", "Venus"], ["Who is the god of the night?", "Pax", "Nyx"]]
 
         # Random Score Test Data
-        # self.rounds_played.set(3)
-        # self.rounds_won.set(2)
-        # self.win_streak = [2]
-        # self.lose_streak = [1]
-        # self.round_data = [["Who is the god of Poison?", "Achyls", "Achlys"], ["Who is the messenger of the gods?",
-        # "Mercury", "Mercury"], ["Who is the god of the sea?", "Uranus", "Neptune"]]
+        self.rounds_played.set(2)
+        self.rounds_won.set(2)
+        self.win_streak = [2]
+        self.lose_streak = [0]
+        self.round_data = [["Who is the god of Poison?", "Achyls", "Achlys"], ["test", "test", "test"], ["test", "test", "test"], ["test", "test", "test"]]
 
         self.play_box = Toplevel()
 
@@ -104,6 +103,11 @@ class Stats:
     """
 
     def __init__(self, partner, all_stats_info):
+
+        # Disable buttons to prevent program crashing
+        # partner.hints_button.config(state=DISABLED)
+        # partner.end_game_button.config(state=DISABLED)
+        # partner.stats_button.config(state=DISABLED)
 
         # Extract info from master list
         rounds_won = all_stats_info[0]
@@ -164,40 +168,62 @@ class Stats:
             border_colour = "#FFF2CC"
 
         # create strings for round data
-        data_string = ""
+        left_round_string = ""
+        right_round_string = ""
+        round_string_list = []
         export_data = ""
-        for item in round_data:
-            if item in round_data[-3:]:
-                data_string += f"\n{item[0]} ({item[1]})\nYou answered: {item[2]}\n"
+        for count, item in enumerate(round_data):
+            if item in round_data[-4:]:
+                if len(round_data) >= 3:
+                    if count == len(round_data) - 2 or count == len(round_data) - 4:
+                        right_round_string += f"\n{item[0]}\nYou answered: {item[1]}\nThe correct answer was: {item[2]}\n"
+                    else:
+                        left_round_string += f"\n{item[0]}\nYou answered: {item[1]}\nThe correct answer was: {item[2]}\n"
+                else:
+                    left_round_string += f"\n{item[0]}\nYou answered: {item[1]}\nThe correct answer was: {item[2]}\n"
             export_data += f"\n{item[0]} \nYour answer: {item[2]}\nCorrect answer: {item[1]}\n"
         # add string to export list
         export_strings.append(export_data)
+        # add round strings to list for label making
+        round_string_list.append(left_round_string)
+        round_string_list.append(right_round_string)
 
         heading_font = ("Arial", "16", "bold")
         normal_font = ("Arial", "14")
         comment_font = ("Arial", "13")
 
-        # Label List (text | font | bg | 'Sticky')
+        # info frame for stats info
+        self.info_frame = Frame(self.stats_frame, background="#FFF2CC")
+        self.info_frame.grid(row=2)
+
+        # Label List (text | font | 'Sticky' | row | column | frame)
         all_stats_strings = [
-            ["Statistics", heading_font, ""],
-            [rounds_string, normal_font, "W"],
-            [success_string, normal_font, "W"],
-            [longest_win_string, normal_font, "W"],
-            [longest_lose_string, normal_font, "W"],
-            [comment_string, comment_font, "W"],
-            ["Round Data", heading_font, ""]
+            ["Statistics", heading_font, "", 1, 0, self.stats_frame],
+            [rounds_string, normal_font, "W", 1, 0, self.info_frame],
+            [success_string, normal_font, "W", 1, 1, self.info_frame],
+            [longest_win_string, normal_font, "W", 2, 0, self.info_frame],
+            [longest_lose_string, normal_font, "W", 2, 1, self.info_frame],
+            [comment_string, comment_font, "", 3, 0, self.stats_frame],
+            ["Round Data", heading_font, "", 4, 0, self.stats_frame]
         ]
 
         stats_label_ref_list = []
         for count, item in enumerate(all_stats_strings):
-            self.stats_label = Label(self.stats_frame, text=item[0], font=item[1],
+            # change formatting if there is only one question
+            # don't change formatting of stats frame strings
+            if len(round_data) < 3 and item[5] != self.stats_frame:
+                row = count
+                column = 0
+            else:
+                row = item[3]
+                column = item[4]
+            self.stats_label = Label(item[5], text=item[0], font=item[1],
                                      anchor="w", justify="left", padx=30, pady=10, bg="#FFF2CC")
-            self.stats_label.grid(row=count, sticky=item[2], padx=40)
+            self.stats_label.grid(row=row, column=column, sticky=item[2])
             stats_label_ref_list.append(self.stats_label)
 
         # config heading label
         heading_label = stats_label_ref_list[0]
-        heading_label.config(bg="#FFFFFF")
         heading_label.grid(pady=10)
 
         # Configure comment label background (for all won / all lost)
@@ -206,45 +232,56 @@ class Stats:
         if comment_string == "":
             stats_comment_label.destroy()
 
-        self.line_label = Label(self.stats_frame, text=f"{'-' * 160}", bg="#FFF2CC", font=("Arial", "5"))
-        self.line_label.grid(row=8)
-
-        # move round data label
-        round_data_label = stats_label_ref_list[6]
-        round_data_label.grid(row=9)
+        # line label rows
+        line_rows = [5, 8]
+        for item in line_rows:
+            self.line_label = Label(self.stats_frame, text=f"{'-' * 180}", bg="#FFF2CC", font=("Arial", "5"))
+            self.line_label.grid(row=item)
 
         # overload notice
         self.overload_label = Label(self.stats_frame,
-                                    text=f"Showing 3 most recent rounds - 3/{rounds_played}\n rounds shown, please "
-                                         "export to file\nto see other rounds", font=("Arial", "14"), justify="left",
+                                    text=f"Showing 4 most recent rounds - 4/{rounds_played} rounds shown, \nplease "
+                                         "export to file to see other rounds", font=("Arial", "14"), justify="left",
                                     background="#E3E1FF", padx=30, pady=15)
-        self.overload_label.grid(row=10, pady=7)
+        self.overload_label.grid(row=6, pady=7)
 
         background = "#E3E1FF"
-        if len(round_data) <= 3:
+        if len(round_data) <= 4:
             background = "#FFFFFF"
             self.overload_label.destroy()
 
+        # create frame for round data
+        self.data_frame = Frame(self.stats_frame, bg=background)
+        self.data_frame.grid(row=7, pady=5, padx=20)
+
+        # list to get labels for later editing
+        data_labels = []
         # create a label to hold the past 3 rounds' data
-        self.data_label = Label(self.stats_frame, text=data_string, font=("Arial", "14"), justify="left",
-                                padx=30, pady=5, bg=background, wraplength=350, width=27)
-        self.data_label.grid(row=11, padx=20, pady=8)
+        for count, item in enumerate(round_string_list):
+            self.data_label = Label(self.data_frame, text=item, font=("Arial", "14"), justify="left",
+                                    padx=10, pady=5, bg=background, wraplength=380, width=28)
+            self.data_label.grid(row=1, column=count)
+            data_labels.append(self.data_label)
+
+        if round_string_list[1] == "":
+            data_labels[1].destroy()
+            data_labels[0].config(width=30, wraplength=350, padx=10)
 
         self.buttons_frame = Frame(self.stats_frame, bg="#FFF2CC")
-        self.buttons_frame.grid(row=12, pady=5)
+        self.buttons_frame.grid(row=9, pady=5)
 
         # buttons info list (text | bg | width | command)
         buttons_strings = [
-            ["Export to File", "#F0A30A", 15, partial(self.export_to_file, export_strings)],
-            ["Dismiss", "#E3C800", 15, partial(self.close_stats, partner)]
+            ["Export to File", "#F0A30A", partial(self.export_to_file, export_strings)],
+            ["Dismiss", "#E3C800", partial(self.close_stats, partner)]
         ]
 
         # create buttons
         for count, item in enumerate(buttons_strings):
             self.stats_button = Button(self.buttons_frame,
                                        font=("Arial", "16", "bold"), text=item[0],
-                                       bg=item[1], width=item[2],
-                                       command=item[3])
+                                       bg=item[1], width=25,
+                                       command=item[2])
             self.stats_button.grid(row=count, padx=30, pady=7)
 
         # closes help dialogue (used by button and x at top of dialogue
@@ -253,6 +290,9 @@ class Stats:
         """
         Closes stats dialogue box (and enables stats button)
         """
+        # put disabled buttons back to normal...
+        # partner.hints_button.config(state=NORMAL)
+        # partner.end_game_button.config(state=NORMAL)
         partner.stats_button.config(state=NORMAL)
         self.stats_box.destroy()
 
