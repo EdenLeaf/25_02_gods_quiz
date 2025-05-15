@@ -231,7 +231,7 @@ class Play:
 
         # list for buttons (frame | text | bg | command | width | row | column)
         control_button_list = [
-            [self.game_frame, "     Next Round  → →", "#A0522D", self.new_round, 21, 5, None],
+            [self.game_frame, "Next Round  →", "#A0522D", self.new_round, 21, 5, None],
             [self.hints_stats_frame, "Hints", "#60A917", self.to_hints, 10, 0, 0],
             [self.hints_stats_frame, "Stats", "#E3C800", self.to_stats, 10, 0, 1],
             [self.game_frame, "End", "#76608A", self.close_play, 21, 7, None]
@@ -253,16 +253,16 @@ class Play:
         self.end_game_button = control_ref_list[3]
 
         # images for use on buttons
-        self.hint_image = PhotoImage(file="hint_v2.png")
-        self.stats_image = PhotoImage(file="stats.png")
-        self.sad_face = PhotoImage(file="sad_face.png")
-        self.happy_face = PhotoImage(file="happy_face.png")
+        self.hint_image = PhotoImage(file="images/hint_v2.png")
+        self.stats_image = PhotoImage(file="images/chart.png")
+        self.sad_face = PhotoImage(file="images/sad_face.png")
+        self.happy_face = PhotoImage(file="images/happy_face.png")
 
         # Disable stats button so that users can't press it without having completed a round, & add image
         self.stats_button.config(state=DISABLED)
         self.stats_button.config(text="Stats  ",
                                  image=self.stats_image,
-                                 compound="right", width=132)
+                                 compound="right", width=132, fg="#000000")
 
         # Hint Button with image
         self.hints_button.config(text="Hints  ",
@@ -283,9 +283,6 @@ class Play:
         Checks four gods, Configures buttons with god choices
         """
 
-        # set up strings
-        correct_god = ""
-
         # reset round data list
         self.round_info = []
 
@@ -304,13 +301,12 @@ class Play:
             self.round_gods_list = gods_list[1]
             correct_god = gods_list[0]
             # If all gods have been asked about, allow duplicates
-            if 0 <= len(self.past_asked_gods) < 63:
+            if 0 <= len(self.past_asked_gods) < 62:
                 if correct_god[2] in self.past_asked_gods:
                     continue
             break
 
         # set up background colour based of the correct god's mythology
-        god_colour = ""
         if correct_god[0] == "Roman":
             god_colour = "#F8CECC"
         else:
@@ -333,7 +329,7 @@ class Play:
         else:
             heading_text = f"Round {rounds_played}"
         self.heading_label.config(text=heading_text, bg="#DEDEDE")
-        if len(self.past_asked_gods) == 64:
+        if len(self.past_asked_gods) == 63:
             self.results_label.config(text=f"         ======= Well done! =======\nYou have answered a "
                                            f"question about all the gods in this quiz. "
                                            f"\nYou can keep on playing, but all questions will "
@@ -368,12 +364,6 @@ class Play:
          it with median, updates results and adds results to stats list.
          """
 
-        # enable stats button after at least one round has been played
-        self.stats_button.config(state=NORMAL)
-
-        # get user answer and god based on button press...
-        answer = self.round_gods_list[user_choice][1]
-
         # alternate way to get button name. Good for if buttons have been scrambled!
         god_name = self.god_button_ref[user_choice].cget('text')
 
@@ -389,15 +379,18 @@ class Play:
             rounds_won = self.rounds_won.get()
             rounds_won += 1
             self.rounds_won.set(rounds_won)
+            # increase lose streak for stats
             self.win_streak += 1
+            # add lose streak to stats list if the ongoing lose streak is longer than 0
             if self.lose_streak > 0:
                 self.all_lose_streaks.append(self.lose_streak)
                 self.lose_streak = 0
         else:
             result_text = f"Oops, {god_name} is incorrect."
             result_bg = "#F8CECC"
-            # add to stats lists
+            # increase lose streak for stats
             self.lose_streak += 1
+            # add win streak to stats list if the ongoing win streak is longer than 0
             if self.win_streak > 0:
                 self.all_win_streaks.append(self.win_streak)
                 self.win_streak = 0
@@ -407,21 +400,22 @@ class Play:
 
         self.results_label.config(text=result_text, bg=result_bg)
 
-        # enable stats and next buttons. disable god buttons
+        # enable next round & stats button buttons. disable god buttons
         self.next_button.config(state=NORMAL)
-        self.stats_button.config(state=NORMAL)
+        for item in self.god_button_ref:
+            item.config(state=DISABLED)
 
         # check to see if game is over
         rounds_played = self.rounds_played.get()
         rounds_wanted = self.rounds_wanted.get()
+        # only enable stats button after 1st round to prevent being able to open multiple boxes
+        if rounds_played == 1:
+            self.stats_button.config(state=NORMAL)
 
         if rounds_played == rounds_wanted:
             self.next_button.config(state=DISABLED, text="Game Over")
             # change 'end game' button to 'play again' button once the game has ended
             self.end_game_button.config(text="Play Again  ", bg="#006600", image=self.happy_face)
-
-        for item in self.god_button_ref:
-            item.config(state=DISABLED)
 
     def close_play(self):
         # reshow root (ie:choose rounds) and end current
@@ -479,6 +473,7 @@ class DisplayHints:
                                 height=200)
         self.hint_frame.grid()
 
+        # label containing heading
         self.hint_heading_label = Label(self.hint_frame, bg="#FFFFFF", text="Hints", font=("Arial", "16", "bold"),
                                         width=6)
         self.hint_heading_label.grid(row=0, pady=10)
@@ -489,6 +484,7 @@ class DisplayHints:
                     "be Athena for a blue background, and Minerva for a red background.\n\nThe colour of each button " \
                     "relates to whether the god is a Major(Gold) or Minor(Silver) god, and is NOT a hint."
 
+        # label containing hints text
         self.hint_text_label = Label(self.hint_frame,
                                      text=hint_text, font=("Arial", "12"), wraplength=400,
                                      justify="left")
@@ -561,7 +557,7 @@ class Stats:
         # math to populate stats dialogue
         success_rate = rounds_won / rounds_played * 100
 
-        # make strings for Stats labels and add them to export lis...
+        # make strings for Stats labels and add them to export lists...
         rounds_string = f"Rounds Played: {rounds_played}"
         export_strings.append(rounds_string)
         success_string = (f"Success rate: {rounds_won} / {rounds_played} "
@@ -574,13 +570,13 @@ class Stats:
 
         # custom comment text and formatting
         if max(win_streaks) == rounds_played:
-            comment_string = ("Well Done! You have won every\nround so far :)")
+            comment_string = "Well Done! You have won every\nround so far :)"
             comment_colour = "#D5E8D4"
             border_colour = "#82B366"
 
         elif max(lose_streaks) == rounds_played:
-            comment_string = ("Oops - You've not won \nany rounds yet :( You might want \n"
-                              "to look at the hints!")
+            comment_string = "Oops - You've not won \nany rounds yet :( You might want \n" \
+                             "to look at the hints!"
             comment_colour = "#F8CECC"
             border_colour = "#B85450"
 
@@ -590,40 +586,65 @@ class Stats:
             border_colour = "#FFF2CC"
 
         # create strings for round data
-        data_string = ""
+        left_round_string = ""
+        right_round_string = ""
+        round_string_list = []
         export_data = ""
-        for item in round_data:
-            if item in round_data[-3:]:
-                data_string += f"\n{item[0]} ({item[1]})\nYou answered: {item[2]}\n"
+        for count, item in enumerate(round_data):
+            if item in round_data[-4:]:
+                if len(round_data) >= 3:
+                    if count == len(round_data) - 2 or count == len(round_data) - 4:
+                        right_round_string += f"\n{item[0]}\nYou answered: {item[2]}\n" \
+                                              f"The correct answer was: {item[1]}\n"
+                    else:
+                        left_round_string += f"\n{item[0]}\nYou answered: {item[2]}\n" \
+                                             f"The correct answer was: {item[1]}\n"
+                else:
+                    left_round_string += f"\n{item[0]}\nYou answered: {item[2]}\nThe correct answer was: {item[1]}\n"
             export_data += f"\n{item[0]} \nYour answer: {item[2]}\nCorrect answer: {item[1]}\n"
         # add string to export list
         export_strings.append(export_data)
+        # add round strings to list for label making
+        round_string_list.append(left_round_string)
+        round_string_list.append(right_round_string)
 
+        # fonts for labels
         heading_font = ("Arial", "16", "bold")
         normal_font = ("Arial", "14")
         comment_font = ("Arial", "13")
 
-        # Label List (text | font | bg | 'Sticky')
+        # info frame for stats info
+        self.info_frame = Frame(self.stats_frame, background="#FFF2CC")
+        self.info_frame.grid(row=2, pady=10)
+
+        # Label List (text | font | 'Sticky' | row | column | frame)
         all_stats_strings = [
-            ["Statistics", heading_font, ""],
-            [rounds_string, normal_font, "W"],
-            [success_string, normal_font, "W"],
-            [longest_win_string, normal_font, "W"],
-            [longest_lose_string, normal_font, "W"],
-            [comment_string, comment_font, "W"],
-            ["Round Data", heading_font, ""]
+            ["Statistics", heading_font, "", 1, 0, self.stats_frame],
+            [rounds_string, normal_font, "W", 1, 0, self.info_frame],
+            [success_string, normal_font, "W", 1, 1, self.info_frame],
+            [longest_win_string, normal_font, "W", 2, 0, self.info_frame],
+            [longest_lose_string, normal_font, "W", 2, 1, self.info_frame],
+            [comment_string, comment_font, "", 3, 0, self.stats_frame],
+            ["Round Data", heading_font, "", 4, 0, self.stats_frame]
         ]
 
         stats_label_ref_list = []
         for count, item in enumerate(all_stats_strings):
-            self.stats_label = Label(self.stats_frame, text=item[0], font=item[1],
-                                     anchor="w", justify="left", padx=30, pady=10, bg="#FFF2CC")
-            self.stats_label.grid(row=count, sticky=item[2], padx=40)
+            # change formatting if there is only one question
+            # don't change formatting of stats frame strings
+            if len(round_data) < 3 and item[5] != self.stats_frame:
+                row = count
+                column = 0
+            else:
+                row = item[3]
+                column = item[4]
+            self.stats_label = Label(item[5], text=item[0], font=item[1],
+                                     anchor="w", justify="left", padx=20, pady=10, bg="#FFF2CC")
+            self.stats_label.grid(row=row, column=column, sticky=item[2])
             stats_label_ref_list.append(self.stats_label)
 
         # config heading label
         heading_label = stats_label_ref_list[0]
-        heading_label.config(bg="#FFFFFF")
         heading_label.grid(pady=10)
 
         # Configure comment label background (for all won / all lost)
@@ -632,45 +653,57 @@ class Stats:
         if comment_string == "":
             stats_comment_label.destroy()
 
-        self.line_label = Label(self.stats_frame, text=f"{'-' * 160}", bg="#FFF2CC", font=("Arial", "5"))
-        self.line_label.grid(row=8)
-
-        # move round data label
-        round_data_label = stats_label_ref_list[6]
-        round_data_label.grid(row=9)
+        # line label rows
+        line_rows = [5, 8]
+        for item in line_rows:
+            self.line_label = Label(self.stats_frame, text=f"{'-' * 180}", bg="#FFF2CC", font=("Arial", "5"))
+            self.line_label.grid(row=item)
 
         # overload notice
         self.overload_label = Label(self.stats_frame,
-                                    text=f"Showing 3 most recent rounds - 3/{rounds_played}\n rounds shown, please "
-                                         "export to file\nto see other rounds", font=("Arial", "14"), justify="left",
+                                    text=f"Showing 4 most recent rounds - 4/{rounds_played} rounds shown, \nplease "
+                                         "export to file to see other rounds", font=("Arial", "14"), justify="left",
                                     background="#E3E1FF", padx=30, pady=15)
-        self.overload_label.grid(row=10, pady=7)
+        self.overload_label.grid(row=6, pady=7)
 
-        background = "#E3E1FF"
-        if len(round_data) <= 3:
+        background = "#E3E1FF"        # if there are 4 or fewer questions completed, destroy overload notice & change round data background to white
+        if len(round_data) <= 4:
             background = "#FFFFFF"
             self.overload_label.destroy()
 
+        # create frame for round data
+        self.data_frame = Frame(self.stats_frame, bg=background)
+        self.data_frame.grid(row=7, pady=5, padx=20)
+
+        # list to get labels for later editing
+        data_labels = []
         # create a label to hold the past 3 rounds' data
-        self.data_label = Label(self.stats_frame, text=data_string, font=("Arial", "14"), justify="left",
-                                padx=30, pady=5, bg=background, wraplength=350, width=27)
-        self.data_label.grid(row=11, padx=20, pady=8)
+        for count, item in enumerate(round_string_list):
+            self.data_label = Label(self.data_frame, text=item, font=("Arial", "14"), justify="left",
+                                    padx=10, pady=5, bg=background, wraplength=330, width=28)
+            self.data_label.grid(row=1, column=count)
+            data_labels.append(self.data_label)
+
+        # if there are 2 or fewer questions answered, remove empty label
+        if round_string_list[1] == "":
+            data_labels[1].destroy()
+            data_labels[0].config(width=30, wraplength=350, padx=10)
 
         self.buttons_frame = Frame(self.stats_frame, bg="#FFF2CC")
-        self.buttons_frame.grid(row=12, pady=5)
+        self.buttons_frame.grid(row=9, pady=5)
 
         # buttons info list (text | bg | width | command)
         buttons_strings = [
-            ["Export to File", "#F0A30A", 15, partial(self.export_to_file, export_strings)],
-            ["Dismiss", "#E3C800", 15, partial(self.close_stats, partner)]
+            ["Export to File", "#F0A30A", partial(self.export_to_file, export_strings)],
+            ["Dismiss", "#E3C800", partial(self.close_stats, partner)]
         ]
 
         # create buttons
         for count, item in enumerate(buttons_strings):
             self.stats_button = Button(self.buttons_frame,
                                        font=("Arial", "16", "bold"), text=item[0],
-                                       bg=item[1], width=item[2],
-                                       command=item[3])
+                                       bg=item[1], width=25,
+                                       command=item[2])
             self.stats_button.grid(row=count, padx=30, pady=7)
 
         # closes help dialogue (used by button and x at top of dialogue
@@ -702,6 +735,7 @@ class Stats:
         file_name = f"god_quiz_{year}_{month}_{day}"
         write_to = f"{file_name}.txt"
 
+        # open file and write in stats
         with open(write_to, "w") as text_file:
             text_file.write("============= God Quiz =============\n")
             text_file.write(f"Generated: {day}/{month}/{year}\n\n")
