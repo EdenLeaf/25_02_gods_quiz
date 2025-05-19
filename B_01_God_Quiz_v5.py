@@ -329,6 +329,7 @@ class Play:
         else:
             heading_text = f"Round {rounds_played}"
         self.heading_label.config(text=heading_text, bg="#DEDEDE")
+        # if the user has answered a question for all gods, give them a notice of duplicate questions
         if len(self.past_asked_gods) == 64:
             self.results_label.config(text=f"         ======= Well done! =======\nYou have answered a "
                                            f"question about all the gods in this quiz. "
@@ -338,6 +339,7 @@ class Play:
         else:
             self.results_label.config(text=f"{'=' * 7}", bg="#F0F0F0")
 
+        # add question text to question label
         self.question_label.config(text=question_text, bg=god_colour)
 
         # shuffle god list
