@@ -329,7 +329,7 @@ class Play:
         else:
             heading_text = f"Round {rounds_played}"
         self.heading_label.config(text=heading_text, bg="#DEDEDE")
-        if len(self.past_asked_gods) == 63:
+        if len(self.past_asked_gods) == 64:
             self.results_label.config(text=f"         ======= Well done! =======\nYou have answered a "
                                            f"question about all the gods in this quiz. "
                                            f"\nYou can keep on playing, but all questions will "
@@ -482,7 +482,7 @@ class DisplayHints:
                     "mythology that the correct god is from:\nRed = Roman\nBlue = Greek\n" \
                     "This means that if the game asks you who the god of wisdom is, you know that the answer would " \
                     "be Athena for a blue background, and Minerva for a red background.\n\nThe colour of each button " \
-                    "relates to whether the god is a Major(Gold) or Minor(Silver) god, and is NOT a hint."
+                    "relates to whether the god is a Major(Gold) god or a Minor(Silver) god, and is NOT a hint."
 
         # label containing hints text
         self.hint_text_label = Label(self.hint_frame,
