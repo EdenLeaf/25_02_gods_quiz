@@ -86,7 +86,7 @@ class StartGame:
         self.endless_frame = Frame(self.start_frame)
         self.endless_frame.grid(row=4)
 
-        self.num_rounds_entry = Entry(self.entry_area_frame, font=("Arial", "18", "bold"), width=10, bg="#DBDBDB",
+        self.num_rounds_entry = Entry(self.entry_area_frame, font=["Arial", "18", "bold"], width=10, bg="#DBDBDB",
                                       justify="center")
         self.num_rounds_entry.grid(row=0, column=0, padx=5, pady=10)
 
@@ -95,7 +95,7 @@ class StartGame:
                              [self.entry_area_frame, "#E1D5E7", "#000000", "Play", 10, "Normal"]]
         # Create start buttons
         for count, item in enumerate(start_button_list):
-            make_start_button = Button(item[0], font=("Arial", "16", "bold"), bg=item[1], fg=item[2], text=item[3],
+            make_start_button = Button(item[0], font=["Arial", "16", "bold"], bg=item[1], fg=item[2], text=item[3],
                                        width=item[4], command=partial(self.check_rounds, item[5]))
             make_start_button.grid(row=0, column=count)
 
@@ -218,7 +218,7 @@ class Play:
 
         # create 4 buttons in a 2 x 2 grid
         for item in range(0, 4):
-            self.god_button = Button(self.god_frame, font=("Arial", "12"),
+            self.god_button = Button(self.god_frame, font=["Arial", "12"],
                                      text="God Name", width=15,
                                      command=partial(self.round_results, item))
             self.god_button.grid(row=item // 2, column=item % 2, padx=5, pady=5)
@@ -241,7 +241,7 @@ class Play:
         control_ref_list = []
         for item in control_button_list:
             make_control_button = Button(item[0], text=item[1], bg=item[2], command=item[3],
-                                         font=("Arial", "16", "bold"), fg="#FFFFFF", width=item[4])
+                                         font=["Arial", "16", "bold"], fg="#FFFFFF", width=item[4])
             make_control_button.grid(row=item[5], column=item[6], padx=5, pady=5)
 
             control_ref_list.append(make_control_button)
@@ -301,8 +301,8 @@ class Play:
             self.round_gods_list = gods_list[1]
             correct_god = gods_list[0]
             # If all gods have been asked about, allow duplicates
-            if 0 <= len(self.past_asked_gods) < 62:
-                if correct_god[2] in self.past_asked_gods:
+            if 0 <= len(self.past_asked_gods) < 64:
+                if correct_god in self.past_asked_gods:
                     continue
             break
 
@@ -396,7 +396,7 @@ class Play:
                 self.win_streak = 0
 
         # add correct god to past asked gods list to prevent duplicates of questions
-        self.past_asked_gods.append(correct_god[2])
+        self.past_asked_gods.append(correct_god)
 
         self.results_label.config(text=result_text, bg=result_bg)
 
@@ -474,7 +474,7 @@ class DisplayHints:
         self.hint_frame.grid()
 
         # label containing heading
-        self.hint_heading_label = Label(self.hint_frame, bg="#FFFFFF", text="Hints", font=("Arial", "16", "bold"),
+        self.hint_heading_label = Label(self.hint_frame, bg="#FFFFFF", text="Hints", font=["Arial", "16", "bold"],
                                         width=6)
         self.hint_heading_label.grid(row=0, pady=10)
 
@@ -486,12 +486,12 @@ class DisplayHints:
 
         # label containing hints text
         self.hint_text_label = Label(self.hint_frame,
-                                     text=hint_text, font=("Arial", "12"), wraplength=400,
+                                     text=hint_text, font=["Arial", "12"], wraplength=400,
                                      justify="left")
         self.hint_text_label.grid(row=1, padx=15)
 
         self.dismiss_button = Button(self.hint_frame,
-                                     font=("Arial", "16", "bold"),
+                                     font=["Arial", "16", "bold"],
                                      text="Dismiss", bg="#60A917", fg="#FFFFFF", width=15,
                                      command=partial(self.close_hint, partner))
         self.dismiss_button.grid(row=2, pady=15, padx=10)
@@ -656,13 +656,13 @@ class Stats:
         # line label rows
         line_rows = [5, 8]
         for item in line_rows:
-            self.line_label = Label(self.stats_frame, text=f"{'-' * 180}", bg="#FFF2CC", font=("Arial", "5"))
+            self.line_label = Label(self.stats_frame, text=f"{'-' * 180}", bg="#FFF2CC", font=["Arial", "5"])
             self.line_label.grid(row=item)
 
         # overload notice
         self.overload_label = Label(self.stats_frame,
                                     text=f"Showing 4 most recent rounds - 4/{rounds_played} rounds shown, \nplease "
-                                         "export to file to see other rounds", font=("Arial", "14"), justify="left",
+                                         "export to file to see other rounds", font=["Arial", "14"], justify="left",
                                     background="#E3E1FF", padx=30, pady=15)
         self.overload_label.grid(row=6, pady=7)
 
@@ -679,7 +679,7 @@ class Stats:
         data_labels = []
         # create a label to hold the past 3 rounds' data
         for count, item in enumerate(round_string_list):
-            self.data_label = Label(self.data_frame, text=item, font=("Arial", "14"), justify="left",
+            self.data_label = Label(self.data_frame, text=item, font=["Arial", "14"], justify="left",
                                     padx=10, pady=5, bg=background, wraplength=330, width=28)
             self.data_label.grid(row=1, column=count)
             data_labels.append(self.data_label)
@@ -701,7 +701,7 @@ class Stats:
         # create buttons
         for count, item in enumerate(buttons_strings):
             self.stats_button = Button(self.buttons_frame,
-                                       font=("Arial", "16", "bold"), text=item[0],
+                                       font=["Arial", "16", "bold"], text=item[0],
                                        bg=item[1], width=25,
                                        command=item[2])
             self.stats_button.grid(row=count, padx=30, pady=7)
