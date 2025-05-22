@@ -396,7 +396,7 @@ class Play:
                 self.all_lose_streaks.append(self.lose_streak)
                 self.lose_streak = 0
         else:
-            # Change chosen god button to red
+            # Change incorrectly chosen god button to red
             self.god_button_ref[user_choice].config(bg="#f5bcba")
             result_text = f"Oops, {chosen_god} is incorrect."
             result_bg = "#F8CECC"
@@ -440,6 +440,7 @@ class Play:
         Displays hints for playing game
         :return:
         """
+        # get the no. of rounds played so that the stats button is not enabled if no rounds have been completed
         rounds_played = self.rounds_played.get()
         DisplayHints(self, rounds_played)
 
@@ -482,7 +483,7 @@ class DisplayHints:
         self.hint_box.protocol('WM_DELETE_WINDOW', partial(self.close_hint, partner))
 
         self.hint_frame = Frame(self.hint_box, width=300,
-                                height=200)
+                                height=200, bg=background)
         self.hint_frame.grid()
 
         # label containing heading
@@ -499,20 +500,16 @@ class DisplayHints:
         # label containing hints text
         self.hint_text_label = Label(self.hint_frame,
                                      text=hint_text, font=["Arial", "12"], wraplength=400,
-                                     justify="left")
+                                     justify="left", bg=background)
         self.hint_text_label.grid(row=1, padx=15)
 
+        # Dismiss button
         self.dismiss_button = Button(self.hint_frame,
                                      font=["Arial", "16", "bold"],
                                      text="Dismiss", bg="#60A917", fg="#FFFFFF", width=15,
                                      command=partial(self.close_hint, partner))
         self.dismiss_button.grid(row=2, pady=15, padx=10)
 
-        # List and loop to set background colour on everything except the buttons
-        recolour_list = [self.hint_frame, self.hint_text_label]
-
-        for item in recolour_list:
-            item.config(bg=background)
 
     def close_hint(self, partner):
         """
@@ -521,7 +518,7 @@ class DisplayHints:
         # put buttons back to normal
         partner.hints_button.config(state=NORMAL)
         partner.end_game_button.config(state=NORMAL)
-        # only enable stats button if played >= 1 round
+        # only enable stats button if played > 1 round
         if self.rounds_played > 1:
             partner.stats_button.config(state=NORMAL)
         self.hint_box.destroy()
@@ -724,8 +721,6 @@ class Stats:
         # Get export button for configuring
         self.export_button = self.stats_button_ref[0]
 
-        # closes help dialogue (used by button and x at top of dialogue
-
     def close_stats(self, partner):
         """
         Closes stats dialogue box (and enables stats button)
@@ -760,10 +755,8 @@ class Stats:
         with open(write_to, "w") as text_file:
             text_file.write("============= God Quiz =============\n")
             text_file.write(f"Generated: {day}/{month}/{year}\n\n")
-            text_file.write(f"{strings[0]}\n")
-            text_file.write(f"{strings[1]}\n")
-            text_file.write(f"{strings[2]}\n")
-            text_file.write(f"{strings[3]}\n")
+            for item in strings[:4]:
+                text_file.write(f"{item}\n")
             text_file.write("-" * 25)
             text_file.write(strings[4])
             text_file.write("=" * 36)
