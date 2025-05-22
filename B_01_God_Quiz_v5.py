@@ -14,6 +14,7 @@ def get_gods():
     file.close()
 
     round_gods = []
+    # list to check there are no duplicate gods
     god_names = []
 
     # get the correct god
@@ -21,11 +22,11 @@ def get_gods():
     round_gods.append(correct_god)
     god_names.append(str(correct_god[2]).replace(" ", ""))
 
-    # loop until we have 3 other gods with different names
+    # loop until we have three more gods
     while len(round_gods) < 4:
         potential_god = random.choice(all_gods)
 
-        # Get the name and check it's not a duplicate
+        # Get the potential gods name and check it's not a duplicate
         if str(potential_god[2]).replace(" ", "") not in god_names:
             round_gods.append(potential_god)
             god_names.append(str(potential_god[2]).replace(" ", ""))
@@ -115,6 +116,7 @@ class StartGame:
         error = "Oops - Please choose a whole number more than 0."
         has_errors = "no"
 
+        # checks that the no. of rounds wanted is valid
         if round_mode == "Normal":
             # checks that number of rounds wanted is more than 0
             try:
@@ -138,6 +140,7 @@ class StartGame:
                 self.num_rounds_entry.delete(0, END)
 
         else:
+            # set rounds wanted to -1 to ensure game never ends
             rounds_wanted = -1
             # invoke PLay Class (and take across number of rounds)
             Play(rounds_wanted)
@@ -286,13 +289,6 @@ class Play:
         # reset round data list
         self.round_info = []
 
-        # retrieve no. of rounds played, add one to it and configure heading
-        rounds_played = self.rounds_played.get()
-        rounds_played += 1
-        self.rounds_played.set(rounds_played)
-
-        rounds_wanted = self.rounds_wanted.get()
-
         # get round gods and correct god
         # if a question about this god has been asked, get a different god.
         while True:
@@ -322,12 +318,16 @@ class Play:
         # add to round info list
         self.round_info.append(question_text)
 
+        # retrieve no. of rounds played & no. of rounds wanted
+        rounds_wanted = self.rounds_wanted.get()
+        rounds_played = self.rounds_played.get()
+
         # Update heading label. "Hide" results label
         # change heading depending on round mode
         if rounds_wanted > 0:
-            heading_text = f"Round {rounds_played} of {rounds_wanted}"
+            heading_text = f"Round {rounds_played + 1} of {rounds_wanted}"
         else:
-            heading_text = f"Round {rounds_played}"
+            heading_text = f"Round {rounds_played + 1}"
         self.heading_label.config(text=heading_text, bg="#DEDEDE")
         # if the user has answered a question for all gods, give them a notice of duplicate questions
         if len(self.past_asked_gods) == 64:
@@ -366,16 +366,24 @@ class Play:
          it with median, updates results and adds results to stats list.
          """
 
+        # retrieve no. of rounds played and add one to it
+        rounds_played = self.rounds_played.get()
+        rounds_played += 1
+        self.rounds_played.set(rounds_played)
+
         # alternate way to get button name. Good for if buttons have been scrambled!
-        god_name = self.god_button_ref[user_choice].cget('text')
+        chosen_god = self.god_button_ref[user_choice].cget('text')
+
+        # make the correct god's button green
+        self.god_button_ref[self.round_gods_list.index(correct_god)].config(bg="#b2d99c")
 
         # add to question lists
         self.round_info.append(correct_god[2])
-        self.round_info.append(god_name)
+        self.round_info.append(chosen_god)
         self.round_questions.append(self.round_info)
 
-        if god_name == correct_god[2]:
-            result_text = f"Success! {god_name} is correct!!"
+        if chosen_god == correct_god[2]:
+            result_text = f"Success! {chosen_god} is correct!!"
             result_bg = "#82B366"
             # add to stats lists
             rounds_won = self.rounds_won.get()
@@ -388,7 +396,9 @@ class Play:
                 self.all_lose_streaks.append(self.lose_streak)
                 self.lose_streak = 0
         else:
-            result_text = f"Oops, {god_name} is incorrect."
+            # Change chosen god button to red
+            self.god_button_ref[user_choice].config(bg="#f5bcba")
+            result_text = f"Oops, {chosen_god} is incorrect."
             result_bg = "#F8CECC"
             # increase lose streak for stats
             self.lose_streak += 1
@@ -571,12 +581,12 @@ class Stats:
         export_strings.append(longest_lose_string)
 
         # custom comment text and formatting
-        if max(win_streaks) == rounds_played:
+        if rounds_won == rounds_played:
             comment_string = "Well Done! You have won every\nround so far :)"
             comment_colour = "#D5E8D4"
             border_colour = "#82B366"
 
-        elif max(lose_streaks) == rounds_played:
+        elif rounds_won == 0:
             comment_string = "Oops - You've not won \nany rounds yet :( You might want \n" \
                              "to look at the hints!"
             comment_colour = "#F8CECC"
@@ -701,12 +711,18 @@ class Stats:
         ]
 
         # create buttons
+        # button_ref
+        self.stats_button_ref = []
         for count, item in enumerate(buttons_strings):
             self.stats_button = Button(self.buttons_frame,
                                        font=["Arial", "16", "bold"], text=item[0],
                                        bg=item[1], width=25,
                                        command=item[2])
             self.stats_button.grid(row=count, padx=30, pady=7)
+            self.stats_button_ref.append(self.stats_button)
+
+        # Get export button for configuring
+        self.export_button = self.stats_button_ref[0]
 
         # closes help dialogue (used by button and x at top of dialogue
 
@@ -725,6 +741,9 @@ class Stats:
         """
         export data to a text file
         """
+
+        # Change exported button when pressed so users are aware it worked
+        self.export_button.config(text="Exported!")
 
         # **** Get current date for heading and filename
         today = date.today()
